@@ -117,14 +117,14 @@ class PicoPlugin:
         self.picoData["tempTo92"] = reg_hex		
 
         # 0x69 0x24 PCB version
-        reg_word = data[0x24]
-        reg_chr = chr(reg_word)
-        self.picoData["verPCB"] = reg_chr
+        reg_word = data[0x24]		
+        reg_hex = format(reg_word, "02x")
+        self.picoData["verPCB"] = reg_hex
 
         # 0x69 0x25 Bootloader version
-        reg_word = data[0x25]
-        reg_chr = chr(reg_word)
-        self.picoData["verBoot"] = reg_chr
+        reg_word = data[0x25]		
+        reg_hex = format(reg_word, "02x")
+        self.picoData["verBoot"] = reg_hex
 
         # 0x69 0x26 FW version
         reg_word = data[0x26]
@@ -296,7 +296,7 @@ def onStart():
     
     if Parameters["Mode6"] == "Debug":
         Domoticz.Debugging(1)
-    Domoticz.Heartbeat(20)
+    Domoticz.Heartbeat(60)
 
     for dev, cfg in deviceDict.items():
         if not dev in Devices:
