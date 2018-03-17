@@ -110,6 +110,11 @@ class PicoPlugin:
         reg_word = data[0x1b]
         reg_hex = format(reg_word, "02x")
         self.picoData["tempNtc1"] = reg_hex
+		
+        # 0x69 0x1c to92 temperature
+        reg_word = data[0x1c]
+        reg_hex = format(reg_word, "02x")
+        self.picoData["tempTo92"] = reg_hex		
 
         # 0x69 0x24 PCB version
         reg_word = data[0x24]
@@ -135,6 +140,22 @@ class PicoPlugin:
             self.picoData["pwrRunTime"] = "disabled"
         else:
             self.picoData["pwrRunTime"] = 1 + reg_word
+			
+        # 0x6b 0x12 Fan Speed
+        reg_word = data[0x12]
+        reg_hex = format(reg_word, "02x")
+        if reg_word == 0x00:
+            self.picoData["fanspeed"] = 0
+        elif reg_word == 0x19:
+            self.picoData["fanspeed"] = 25.00
+        elif reg_word == 0x32:
+            self.picoData["fanspeed"] = 50.00
+        elif reg_word == 0x4b:
+            self.picoData["fanspeed"] = 75.00
+        elif reg_word == 0x64:
+            self.picoData["fanspeed"] = 100.00				
+        else:
+            self.picoData["fanspeed"] = reg_hex
 
         # 0x6b 0x09, 0x0a, 0x0b User LEDs Orange, Green, Blue
         self.picoData["ledOrange"] = data[0x09]
@@ -185,7 +206,9 @@ class PicoPlugin:
         print("BAT Voltage (V): " + str(self.picoData["voltBat"]))
         print("RPi Voltage (V): " + str(self.picoData["voltRpi"]))
         print("NTC1 Temperature (deg. C): " + str(self.picoData["tempNtc1"]))
+        print("To92 Temperature (deg. C): " + str(self.picoData["tempTo92"]))		
         print("Powering mode: " + self.picoData["pwrMode"])
+        print("Fan Speed: " + self.picoData["fanspeed"])		
         print("Bat Powering running time (min): " + str(self.picoData["pwrRunTime"]))
         print("User LED Orange: " + str(self.picoData["ledOrange"]))
         print("User LED Green: " + str(self.picoData["ledGreen"]))
@@ -248,6 +271,18 @@ deviceDict = {
             "TypeName": "Switch",
             "picoName": "ledEnable",
         },
+        9: {
+            "Name": "TO92 Temperature",
+            "Unit": 9,
+            "TypeName": "Temperature",
+            "picoName": "tempTo92",
+        },
+        10: {
+            "Name": "Fan Speed",
+            "Unit": 10,
+            "TypeName": "Percentage",
+            "picoName": "fanspeed",
+        },		
         99: {
             "Name": "Test",
             "Unit": 99,
@@ -278,6 +313,8 @@ def onStart():
     Domoticz.Debug("BAT Voltage: " + str(_pico.picoData["voltBat"]))
     Domoticz.Debug("RPi Voltage: " + str(_pico.picoData["voltRpi"]))
     Domoticz.Debug("NTC1 Temperature: " + str(_pico.picoData["tempNtc1"]))
+    Domoticz.Debug("TO92 Temperature: " + str(_pico.picoData["tempTo92"]))
+    Domoticz.Debug("Fan Speed: " + str(_pico.picoData["fanspeed"]))		
     Domoticz.Debug("Powering Mode: " + _pico.picoData["pwrMode"])
     Domoticz.Debug("User LED Orange: " + str(_pico.picoData["ledOrange"]))
     Domoticz.Debug("User LED Green: " + str(_pico.picoData["ledGreen"]))
@@ -293,6 +330,8 @@ def onStart():
         UpdateDevice(6, _pico.picoData["ledGreen"], "0")
         UpdateDevice(7, _pico.picoData["ledBlue"], "0")
         UpdateDevice(8, _pico.picoData["ledEnable"], "0")
+        UpdateDevice(9, 0, str(_pico.picoData["tempTo92"]), updEvery=True)
+        UpdateDevice(10, 0, str(_pico.picoData["fanspeed"]), updEvery=True)			
 
     #DumpConfigToLog()
 
@@ -322,12 +361,14 @@ def onHeartbeat():
     if result:
         UpdateDevice(1, 0, str(_pico.picoData["voltBat"]), updEvery=True)
         UpdateDevice(2, 0, str(_pico.picoData["voltRpi"]), updEvery=True)
-        UpdateDevice(3, 0, str(_pico.picoData["tempNtc1"]), updEvery=True)
+        UpdateDevice(3, 0, str(_pico.picoData["tempNtc1"]), updEvery=True)		
         UpdateDevice(4, 0, _pico.picoData["pwrMode"])
         UpdateDevice(5, _pico.picoData["ledOrange"], "0")
         UpdateDevice(6, _pico.picoData["ledGreen"], "0")
         UpdateDevice(7, _pico.picoData["ledBlue"], "0")
         UpdateDevice(8, _pico.picoData["ledEnable"], "0")
+        UpdateDevice(9, 0, str(_pico.picoData["tempTo92"]), updEvery=True)
+        UpdateDevice(10, 0, str(_pico.picoData["fanspeed"]), updEvery=True)		
 
 def UpdateDevice(Unit, nValue, sValue, updEvery=False):
     # Make sure that the Domoticz device still exists (they can be deleted) before updating it
