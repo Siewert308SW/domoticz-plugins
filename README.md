@@ -7,6 +7,3 @@ Forum: http://www.domoticz.com/forum
 
 ## UPS PIco HV3.0A (by Pimodules)
 ups-pico/
-
-## WeMo Switch (by Belkin)
-wemo-switch/
